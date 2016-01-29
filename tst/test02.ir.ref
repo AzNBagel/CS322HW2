@@ -1,0 +1,9 @@
+# IR Program
+
+_main ()
+{
+ call _printInt(123)
+ call _printStr()
+ call _printBool(true)
+ return 
+}

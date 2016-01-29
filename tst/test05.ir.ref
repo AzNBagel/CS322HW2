@@ -1,0 +1,12 @@
+# IR Program
+
+_main ()
+{
+ if true == false goto L0
+ call _printInt(1)
+ goto L1
+L0:
+ call _printInt(2)
+L1:
+ return 
+}

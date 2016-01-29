@@ -1,0 +1,22 @@
+# IR Program
+
+_main ()
+(b)
+{
+ t1 = call _malloc(5)
+ b = t1
+ [b]:I = 10
+ 4[b]:B = true
+ t2 = 4[b]:B
+ if t2 == false goto L0
+ call _B_go(b)
+L0:
+ return 
+}
+
+_B_go (obj)
+{
+ t1 = [obj]:I
+ call _printInt(t1)
+ return 
+}

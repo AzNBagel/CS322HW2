@@ -1,0 +1,15 @@
+# IR Program
+
+_main ()
+(b)
+{
+ b = 0
+ call _Body_go(b)
+ return 
+}
+
+_Body_go (obj)
+{
+ call _printStr("Go!")
+ return 
+}

@@ -1,0 +1,23 @@
+# IR Program
+
+_main ()
+(a, b)
+{
+ a = 0
+ b = 0
+ t1 = call _A_f(a)
+ call _printInt(t1)
+ t2 = call _A_f(b)
+ call _printInt(t2)
+ return 
+}
+
+_A_f (obj)
+{
+ return 10
+}
+
+_B_f (obj)
+{
+ return 20
+}

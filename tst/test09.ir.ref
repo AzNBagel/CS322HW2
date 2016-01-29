@@ -1,0 +1,16 @@
+# IR Program
+
+_main ()
+(b, i)
+{
+ b = 0
+ t1 = call _Body_go(b, 1, 2, 3)
+ i = t1
+ call _printInt(i)
+ return 
+}
+
+_Body_go (obj, i, j, k)
+{
+ return k
+}

@@ -1,0 +1,15 @@
+# IR Program
+
+_main ()
+(b)
+{
+ t1 = call _malloc(8)
+ b = t1
+ [b]:I = 10
+ 4[b]:I = 20
+ t2 = [b]:I
+ call _printInt(t2)
+ t3 = 4[b]:I
+ call _printInt(t3)
+ return 
+}

@@ -1,0 +1,12 @@
+# IR Program
+
+_main ()
+(a)
+{
+ t1 = call _malloc(4)
+ a = t1
+ [a]:I = 10
+ t2 = [a]:I
+ call _printInt(t2)
+ return 
+}

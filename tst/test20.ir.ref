@@ -1,0 +1,34 @@
+# IR Program
+
+_main ()
+(b, a)
+{
+ t1 = call _malloc(8)
+ b = t1
+ a = b
+ [b]:I = 11
+ 4[b]:I = 22
+ t2 = call _A_f(a)
+ call _printInt(t2)
+ t3 = call _A_g(a)
+ call _printInt(t3)
+ return 
+}
+
+_A_f (obj)
+{
+ t1 = [obj]:I
+ return t1
+}
+
+_A_g (obj)
+{
+ t1 = [obj]:I
+ return t1
+}
+
+_B_f (obj)
+{
+ t1 = 4[obj]:I
+ return t1
+}
