@@ -32,11 +32,11 @@ public class IRGen {
   //  For keeping information about a class decl for later use in the codegen.
   //
   static class ClassInfo {
-    String name;			// class name
-    ClassInfo parent;			// pointer to parent's record
-    Ast.ClassDecl classDecl; 		// class source AST
+    String name;			            // class name
+    ClassInfo parent;			        // pointer to parent's record
+    Ast.ClassDecl classDecl; 		    // class source AST
     HashMap<String,Integer> offsets; 	// instance variable offsets
-    int objSize; 			// class object size
+    int objSize; 			            // class object size
 
     // Constructor -- clone a parent's record
     //
@@ -44,9 +44,9 @@ public class IRGen {
       this.name = cdecl.nm;
       this.parent = parent;
       this.classDecl = cdecl;
-      this.offsets = new HashMap<String,Integer>(parent.offsets); 
+      this.offsets = new HashMap<String,Integer>(parent.offsets);
       this.objSize = parent.objSize;
-    }      
+    }
 
     // Constructor -- create a blank new record
     //
@@ -54,27 +54,27 @@ public class IRGen {
       this.name = cdecl.nm;
       this.parent = null;
       this.classDecl = cdecl;
-      this.offsets = new HashMap<String,Integer>(); 
+      this.offsets = new HashMap<String,Integer>();
       this.objSize = 0;
-    }      
+    }
 
     // Return method's base class record
     //
     ClassInfo methodBaseClass(String mname) throws Exception {
-      for (Ast.MethodDecl mdecl: classDecl.mthds)
-	if (mdecl.nm.equals(mname)) 
-	  return this;
+      for (Ast.MethodDecl mdecl : classDecl.mthds)
+        if (mdecl.nm.equals(mname))
+          return this;
       if (parent != null)
         return parent.methodBaseClass(mname);
       throw new GenException("Can't find base class for method " + mname);
-    }	
+    }
 
     // Return method's return type
     //
     Ast.Type methodType(String mname) throws Exception {
       for (Ast.MethodDecl mdecl: classDecl.mthds)
-	if (mdecl.nm.equals(mname))
-	  return mdecl.t;
+    if (mdecl.nm.equals(mname))
+      return mdecl.t;
       if (parent != null)
         return parent.methodType(mname);
       throw new GenException("Can't find MethodDecl for method " + mname);
@@ -84,8 +84,8 @@ public class IRGen {
     //
     Ast.Type fieldType(String fname) throws Exception {
       for (Ast.VarDecl fdecl: classDecl.flds) {
-	if (fdecl.nm.equals(fname))
-	  return fdecl.t;
+    if (fdecl.nm.equals(fname))
+      return fdecl.t;
       }
       if (parent != null)
         return parent.fieldType(fname);
@@ -100,7 +100,7 @@ public class IRGen {
 
     public String toString() {
       return "ClassInfo: " + " " + name + " " + parent
-	+ " " + offsets + " " + objSize + " " + classDecl;
+    + " " + offsets + " " + objSize + " " + classDecl;
     }
   }
 
@@ -116,11 +116,11 @@ public class IRGen {
     IR.Type type;
     IR.Src src;
     List<IR.Inst> code;
-    CodePack(IR.Type type, IR.Src src, List<IR.Inst> code) { 
-      this.type=type; this.src=src; this.code=code; 
+    CodePack(IR.Type type, IR.Src src, List<IR.Inst> code) {
+      this.type=type; this.src=src; this.code=code;
     }
-    CodePack(IR.Type type, IR.Src src) { 
-      this(type, src, new ArrayList<IR.Inst>()); 
+    CodePack(IR.Type type, IR.Src src) {
+      this(type, src, new ArrayList<IR.Inst>());
     }
   }
 
@@ -142,7 +142,7 @@ public class IRGen {
   // Return an object's base ClassInfo.
   //
   static ClassInfo getClassInfo(Ast.Exp obj, ClassInfo cinfo, 
-					Env env) throws Exception {
+                    Env env) throws Exception {
     ClassInfo info = null;
     if (obj instanceof Ast.This) {
       info = cinfo;
@@ -155,7 +155,7 @@ public class IRGen {
       Ast.ObjType type = (Ast.ObjType) info.fieldType(((Ast.Field) obj).nm);
       info = classEnv.get(type.nm);
     } else {
-      throw new GenException("Unexpected obj epxression " + obj);  
+      throw new GenException("Unexpected obj epxression " + obj);
     }
     return info;
   }
@@ -201,14 +201,16 @@ public class IRGen {
   public static IR.Program gen(Ast.Program n) throws Exception {
     List<IR.Data> allData = new ArrayList<IR.Data>();	// empty
     List<IR.Func> allFuncs = new ArrayList<IR.Func>();
-    // pass 1: create class info records 
+    // pass 1: create class info records
     for (Ast.ClassDecl c: n.classes) {
       ClassInfo cinfo = createClassInfo(c);
       classEnv.put(c.nm, cinfo);
     }
     // pass 2: generate IR code
-
-    //  ... NEED CODE ...
+    for(Ast.ClassDecl c: n.classes) {
+        ClassInfo cinfo = classEnv.get(c.nm);
+        allFuncs.addAll(gen(c, cinfo));
+    }
 
     return new IR.Program(allData, allFuncs);
   }
@@ -223,9 +225,30 @@ public class IRGen {
   //  3. Decide this class' object size
   //
   private static ClassInfo createClassInfo(Ast.ClassDecl n) throws Exception {
+    ClassInfo cinfo;
+    // Check if parent exists
+	  if(n.pnm != null) {
+      // If parent does exist, create new ClassInfo with information from
+      // classEnv hashmap
+      cinfo = new ClassInfo(n, classEnv.get(n.pnm));
+    }
+    //
+    else
+      cinfo = new ClassInfo(n);
+    // Initialize objects offset
+    int currentOffset = cinfo.objSize;
+    // Step through fields list
+    for (Ast.VarDecl v: n.flds) {
+      // Dump variable into offset hashmap with current offset value
+      cinfo.offsets.put(v.nm, currentOffset);
+      // Increment offset counter based on the data type
+      // 1 for :B, 4 for :I, 8 for :p
+      currentOffset += gen(v.t).size;
+    }
+    // Set total offset for the block
+    cinfo.objSize = currentOffset;
 
-    //  ... NEED CODE ...
-
+    return cinfo;
   }
 
   // ClassDecl ---
@@ -276,7 +299,7 @@ public class IRGen {
   //  IR.Move instruction to assign the result to the var in the decl.
   //
   static List<IR.Inst> gen(Ast.VarDecl n, ClassInfo cinfo, 
-				   Env env) throws Exception {
+                   Env env) throws Exception {
 
     //  ... NEED CODE ...
 
@@ -355,7 +378,7 @@ public class IRGen {
   //  7. Generate IR.Call instruction (set the indirect flag to false)
   //
   static CodePack genCall(Ast.Exp obj, String name, Ast.Exp[] args, 
-			  ClassInfo cinfo, Env env, boolean retFlag) throws Exception {
+              ClassInfo cinfo, Env env, boolean retFlag) throws Exception {
  
     //  ... NEED CODE ...
 

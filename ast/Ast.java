@@ -56,7 +56,7 @@ public class Ast {
   public static class ClassDecl extends Node {
     public final String nm;	       // class name
     public final String pnm;	       // parent class name (could be null)
-    public final VarDecl[] flds;       // fiels
+    public final VarDecl[] flds;       // fields
     public final MethodDecl[] mthds;   // methods
 
     public ClassDecl(String c, String p, VarDecl[] va, MethodDecl[] ma) {
