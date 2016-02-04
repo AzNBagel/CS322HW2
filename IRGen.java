@@ -499,15 +499,15 @@ public class IRGen {
     IR.CJump cJump = new IR.CJump(IR.ROP.EQ, condPack.src, IR.FALSE, L1);
     code.add(cJump);
     // + s1.c
-    code.addAll(gen(n.s1));
+    code.addAll(gen(n.s1, cinfo, env));
     // [+ "goto L2"] thru end
     if (n.s2 != null) {
-      IR1.Label L2 = new IR1.Label();
-      IR1.LabelDec L2Dec = new IR1.LabelDec(L2);
-      IR1.Jump jump = new IR1.Jump(L2);
+      IR.Label L2 = new IR.Label();
+      IR.LabelDec L2Dec = new IR.LabelDec(L2);
+      IR.Jump jump = new IR.Jump(L2);
       code.add(jump);
       code.add(L1Dec);
-      code.addAll(gen(n.s2));
+      code.addAll(gen(n.s2, cinfo, env));
       code.add(L2Dec);
     }
     // + "L1:"
