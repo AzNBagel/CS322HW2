@@ -325,7 +325,7 @@ public class IRGen {
       if (v.init != null) {
         CodePack initPack = gen(v.init);
         code.addAll(initPack.code);
-        code.add(new IR1.Move(new IR1.Id(v.nm), initPack.src));
+        code.add(new IR.Move(new IR.Id(v.nm), initPack.src));
       }
       // *******************
     }
@@ -352,7 +352,7 @@ public class IRGen {
   // Exp init;
   //
   // Codegen Guideline: 
-  //  (Note: Same as in IR1Gen.java)
+  //  (Note: Same as in IRGen.java)
   //  If init exp exists, generate code to evaluate the exp, and add an
   //  IR.Move instruction to assign the result to the var in the decl.
   //
@@ -475,7 +475,7 @@ public class IRGen {
   // Stmt s1, s2;
   //
   // Codegen Guideline: 
-  //  (Note: Same as in IR1Gen.java)
+  //  (Note: Same as in IRGen.java)
   //  newLabel: L1[,L2]
   //  code: cond.c 
   //        + "if cond.v == 0 goto L1" 
@@ -524,7 +524,7 @@ public class IRGen {
   // Stmt s;
   //
   // Codegen Guideline: 
-  //  (Note: Same as in IR1Gen.java)
+  //  (Note: Same as in IRGen.java)
   //  newLabel: L1,L2
   //  code: "L1:" 
   //        + cond.c 
@@ -534,9 +534,29 @@ public class IRGen {
   //        + "L2:"
   //
   static List<IR.Inst> gen(Ast.While n, ClassInfo cinfo, Env env) throws Exception {
- 
-    //  ... NEED CODE ...
+    List<IR.Inst> code = new ArrayList<IR.Inst>();
+    CodePack condPack = gen(n.cond, cinfo, env);
+    IR.Label L1 = new IR.Label();
+    IR.Label L2 = new IR.Label();
+    // Prepare Labeldecs
+    IR.LabelDec L1Dec = new IR.LabelDec(L1);
+    IR.LabelDec L2Dec = new IR.LabelDec(L2);
+    // Create conditional jump & regular jump
+    IR.CJump cJump = new IR.CJump(IR.ROP.EQ, condPack.src, IR.FALSE, L2);
+    IR.Jump jump = new IR.Jump(L1);
 
+    // Add code for the condition check and cJump
+    code.add(L1Dec);
+    code.addAll(condPack.code);
+    code.add(cJump);
+
+    // Loop body
+    for(IR.Inst i : gen(n.s, cinfo, env))
+      code.add(i);
+    code.add(jump);
+    code.add(L2Dec);
+
+    return code;
   }
   
   // Print ---
@@ -557,7 +577,7 @@ public class IRGen {
   // Exp val;
   //
   // Codegen Guideline: 
-  //  (Note: Same as in IR1Gen.java)
+  //  (Note: Same as in IRGen.java)
   //  1. If val is non-null, generate IR code for it
   //  2. Generate an IR.Return instruction
   //
