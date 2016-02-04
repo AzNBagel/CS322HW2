@@ -441,8 +441,32 @@ public class IRGen {
   //
   static CodePack genCall(Ast.Exp obj, String name, Ast.Exp[] args, 
               ClassInfo cinfo, Env env, boolean retFlag) throws Exception {
- 
-    //  ... NEED CODE ...
+    List<IR.Inst> code = new ArrayList<>();
+    List<IR.Src> sources = new ArrayList<>();
+    boolean indirect = false;
+    ClassInfo baseInfo = getClassInfo(obj, cinfo, env);
+    IR.Global global = new IR.Global("_" + cinfo.methodBaseClass(name) + "_" + name);
+    CodePack objPack = gen(obj, cinfo, env);
+    sources.add(objPack.src);
+    code.addAll(objPack.code);
+
+    for(Ast.Exp e : args) {
+      CodePack ePack = gen(e, cinfo, env);
+      code.addAll(ePack.code);
+      sources.add(ePack.src);
+    }
+
+    IR.Temp temp = null;
+    if(retFlag == true) {
+      Ast.Type methodType = baseInfo.methodType(name);
+      temp = new IR.Temp();
+
+      code.add(gen(new Ast.Call(obj, indirect, sources, temp)));
+      return new CodePack(methodType, temp, code);
+    }
+
+
+
 
   }
 
@@ -462,8 +486,36 @@ public class IRGen {
   //        [+ "L2:"]
   //
   static List<IR.Inst> gen(Ast.If n, ClassInfo cinfo, Env env) throws Exception {
- 
-    //  ... NEED CODE ...
+    List<IR.Inst> code = new ArrayList<>();
+    CodePack condPack = gen(n.cond, cinfo, env);
+
+    // cond.c
+    code.addAll(condPack.code);
+
+    // Get L1 read for reference in CJump
+    IR.Label L1 = new IR.Label();
+    IR.LabelDec L1Dec = new IR.LabelDec(L1);
+    // + "if cond.v == false goto L1"
+    IR.CJump cJump = new IR.CJump(IR.ROP.EQ, condPack.src, IR.FALSE, L1);
+    code.add(cJump);
+    // + s1.c
+    code.addAll(gen(n.s1));
+    // [+ "goto L2"] thru end
+    if (n.s2 != null) {
+      IR1.Label L2 = new IR1.Label();
+      IR1.LabelDec L2Dec = new IR1.LabelDec(L2);
+      IR1.Jump jump = new IR1.Jump(L2);
+      code.add(jump);
+      code.add(L1Dec);
+      code.addAll(gen(n.s2));
+      code.add(L2Dec);
+    }
+    // + "L1:"
+    else {
+      code.add(L1Dec);
+    }
+
+    return code;
 
   }
 
@@ -550,8 +602,26 @@ public class IRGen {
   //     otherwise, just generate an IR.IntLit(0).
   //
   static CodePack gen(Ast.NewObj n, ClassInfo cinfo, Env env) throws Exception {
+    List<IR.Inst> code = new ArrayList<>();
+    List<IR.Src> sources = new ArrayList<>();
+    boolean b = false;
+    ClassInfo newInfo = classEnv.get(n.nm);
 
-    
+    int size = newInfo.objSize;
+    IR.IntLit objSize = new IR.IntLit(size);
+
+    sources.add(objSize);
+
+    IR.Temp temp = new IR.Temp;
+
+    IR.Global global;
+    if(size != 0) {
+      global = new IR.Global("_malloc");
+    }
+
+    code.add(new IR.Call(global, b, sources, temp));
+    IR.Temp temp = new IR.Temp();
+
   }
   
   // Field ---
@@ -567,8 +637,20 @@ public class IRGen {
   //  6. Generate and IR.Load instruction
   //
   static CodePack gen(Ast.Field n, ClassInfo cinfo, Env env) throws Exception {
+    List<IR.Inst> code = new ArrayList<>();
+
+    CodePack fieldPack = gen(n.obj, cinfo, env);
+    ClassInfo objInfo = getClassInfo(n.obj, cinfo, env);
+    int offset = objInfo.fieldOffset(n.nm);
+    IR.Addr addr = new IR.Addr(fieldPack.src, offset);
+
+    IR.Load load = new IR.Load(gen(objInfo.fieldType(n.nm)), new IR.Temp(), addr)
+
+    code.add(new IR.Load(gen(objInfo.fieldType(n.nm)), new IR.Temp(), addr));
 
 
+    //Fucked
+    return new CodePack(load, code);
   }
   
   // Id ---
