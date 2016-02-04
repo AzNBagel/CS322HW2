@@ -208,8 +208,8 @@ public class IRGen {
     }
     // pass 2: generate IR code
     for(Ast.ClassDecl c: n.classes) {
-        ClassInfo cinfo = classEnv.get(c.nm);
-        allFuncs.addAll(gen(c, cinfo));
+      ClassInfo cinfo = classEnv.get(c.nm);
+      allFuncs.addAll(gen(c, cinfo));
     }
 
     return new IR.Program(allData, allFuncs);
@@ -288,9 +288,62 @@ public class IRGen {
   //  6. Return an IR.Func with the above
   //
   static IR.Func gen(Ast.MethodDecl n, ClassInfo cinfo) throws Exception {
+    // NOPE List<IR.Func> funcs = new ArrayList<>();
+    List<IR.Id> params = new ArrayList<>();
+    List<IR.Id> locals = new ArrayList<>();
+    List<IR.Inst> code = new ArrayList<>();
+    IR.Global methodName;
+    // If method name is Main
+    if(!n.nm.equals("main")) {
+      // 1
+      methodName = new IR.Global("_" + cinfo.name + "_" + n.nm);
+      // 2
 
-    //  ... NEED CODE ...
+      // Unsure of what thisObj actually is
+      params.add(thisObj);
+    }
+    else
+      methodName = new IR.Global("main");
 
+    // 3
+    Env env = new Env();
+    for(Ast.Param p : n.params) {
+      params.add(new IR.Id(p.nm));
+      env.put(p.nm, p.t);
+    }
+    // Add locals only once
+    // 4
+    for(Ast.VarDecl v : n.vars) {
+      if(!locals.contains(v)) {
+        locals.add(new IR.Id(v.nm));
+        env.put(v.nm, v.t);
+      }
+      // ***************
+      // REVIEW
+
+      // code.addAll(gen(v, cinfo, env));
+      if (v.init != null) {
+        CodePack initPack = gen(v.init);
+        code.addAll(initPack.code);
+        code.add(new IR1.Move(new IR1.Id(v.nm), initPack.src));
+      }
+      // *******************
+    }
+    // Comments said to do this
+    IR.Temp.reset();
+
+    //5
+    for(Ast.Stmt s : n.stmts) {
+      code.addAll(gen(s, cinfo, env));
+    }
+
+    // If there is no return type set, append return statement.
+    if (cinfo.methodType(n.nm) == null) {
+      code.add(new IR.Return());
+    }
+
+
+    return new IR.Func(methodName, params, locals, code);
   } 
 
   // VarDecl ---
@@ -497,9 +550,8 @@ public class IRGen {
   //     otherwise, just generate an IR.IntLit(0).
   //
   static CodePack gen(Ast.NewObj n, ClassInfo cinfo, Env env) throws Exception {
- 
-    //  ... NEED CODE ...
 
+    
   }
   
   // Field ---
@@ -515,8 +567,7 @@ public class IRGen {
   //  6. Generate and IR.Load instruction
   //
   static CodePack gen(Ast.Field n, ClassInfo cinfo, Env env) throws Exception {
- 
-    //  ... NEED CODE ...
+
 
   }
   
@@ -531,9 +582,14 @@ public class IRGen {
   //     (b) Call gen on this new node
   //
   static CodePack gen(Ast.Id n, ClassInfo cinfo, Env env) throws Exception {
- 
-    //  ... NEED CODE ...
-
+    if(env.containsKey(n)) {
+      CodePack idPack = new CodePack(gen(env.get(n.nm)), new IR.Id(n.nm));
+      return idPack;
+    }
+    else {
+      Ast.Field instanceVar = new Ast.Field(new Ast.This(), n.nm);
+      return gen(instanceVar, cinfo, env);
+    }
   }
 
   // This ---
