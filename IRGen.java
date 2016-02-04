@@ -199,8 +199,8 @@ public class IRGen {
   //  2. generate IR code (a list of functions)
   //
   public static IR.Program gen(Ast.Program n) throws Exception {
-    List<IR.Data> allData = new ArrayList<IR.Data>();	// empty
-    List<IR.Func> allFuncs = new ArrayList<IR.Func>();
+    List<IR.Data> allData = new ArrayList<>();	// empty
+    List<IR.Func> allFuncs = new ArrayList<>();
     // pass 1: create class info records
     for (Ast.ClassDecl c: n.classes) {
       ClassInfo cinfo = createClassInfo(c);
@@ -260,9 +260,14 @@ public class IRGen {
   //  Straightforward -- generate an IR.Func for each mthdDecl.
   //
   static List<IR.Func> gen(Ast.ClassDecl n, ClassInfo cinfo) throws Exception {
+    List<IR.Func> funcs = new ArrayList<>();
 
-    //  ... NEED CODE ...
+    for(Ast.MethodDecl m : n.mthds) {
+      IR.Func f = gen(m, cinfo);
+      funcs.add(f);
+    }
 
+    return funcs;
   }
 
   // MethodDecl ---
@@ -324,9 +329,13 @@ public class IRGen {
   // Stmt[] stmts;
   //
   static List<IR.Inst> gen(Ast.Block n, ClassInfo cinfo, Env env) throws Exception {
- 
-    //  ... NEED CODE ...
+    List<IR.Inst> code = new ArrayList<>();
 
+    for (Ast.Stmt s: n.stmts) {
+      code.addAll(gen(s, cinfo, env));
+    }
+
+    return code;
   }
 
   // Assign ---
