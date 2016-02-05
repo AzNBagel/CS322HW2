@@ -450,11 +450,7 @@ public class IRGen {
     sources.add(objPack.src);
     code.addAll(objPack.code);
 
-    for(Ast.Exp e : args) {
-      CodePack ePack = gen(e, cinfo, env);
-      code.addAll(ePack.code);
-      sources.add(ePack.src);
-    }
+
 
     IR.Temp temp;
     IR.Type methodType;
@@ -467,9 +463,15 @@ public class IRGen {
       return new CodePack(methodType, temp, code);
     }
 
+    for(Ast.Exp e : args) {
+      CodePack ePack = gen(e, cinfo, env);
+      code.addAll(ePack.code);
+      sources.add(ePack.src);
+    }
+    // Have to set to false here
     code.add(new IR.Call(global, false, sources));
 
-    return new CodePack(methodType, code);
+    return new CodePack(methodType, temp, code);
 
 
   }
