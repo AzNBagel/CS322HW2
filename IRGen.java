@@ -568,9 +568,29 @@ public class IRGen {
   //     to decide between "printInt" and "printBool"
   //
   static List<IR.Inst> gen(Ast.Print n, ClassInfo cinfo, Env env) throws Exception {
- 
-    //  ... NEED CODE ...
+    List<IR.Inst> code = new ArrayList<IR.Inst>();
+    List<IR.Src> sources = new ArrayList<IR.Src>();
+    IR.Global global;
 
+    // Need a check to determine which print global to use.
+    // If the arg is a strlit, or unll we use _printStr
+    if(n.arg instanceof Ast.StrLit || n.arg == null) {
+      global = new IR.Global("_printStr");
+    }
+    // Else we use printInt (Booleans included as 0 or 1)
+    else if (n.arg instanceof Ast.BoolLit) {
+      global = new IR.Global("_PrintBool");
+    }
+    else {
+      global = new IR.Global("_printInt");
+    }
+    CodePack argPack = gen(n.arg, cinfo, env);
+    code.addAll(argPack.code);
+    sources.add(argPack.src);
+
+    code.add(new IR.Call(global, false, sources));
+
+    return code;
   }
 
   // Return ---  
@@ -666,11 +686,9 @@ public class IRGen {
     IR.Addr addr = new IR.Addr(fieldPack.src, offset);
 
     IR.Load load = new IR.Load(gen(objInfo.fieldType(n.nm)), new IR.Temp(), addr)
-
+    
     code.add(new IR.Load(gen(objInfo.fieldType(n.nm)), new IR.Temp(), addr));
 
-
-    //Fucked
     return new CodePack(load, code);
   }
   
