@@ -443,7 +443,7 @@ public class IRGen {
               ClassInfo cinfo, Env env, boolean retFlag) throws Exception {
     List<IR.Inst> code = new ArrayList<>();
     List<IR.Src> sources = new ArrayList<>();
-    boolean indirect = false;
+
     ClassInfo baseInfo = getClassInfo(obj, cinfo, env);
     IR.Global global = new IR.Global("_" + cinfo.methodBaseClass(name) + "_" + name);
     CodePack objPack = gen(obj, cinfo, env);
@@ -456,16 +456,20 @@ public class IRGen {
       sources.add(ePack.src);
     }
 
-    IR.Temp temp = null;
-    if(retFlag == true) {
-      Ast.Type methodType = baseInfo.methodType(name);
+    IR.Temp temp;
+    IR.Type methodType;
+    if(retFlag) {
+      methodType = gen(baseInfo.methodType(name));
       temp = new IR.Temp();
 
-      code.add(gen(new Ast.Call(obj, indirect, sources, temp)));
+      code.add(new IR.Call(global, false, sources, temp));
+
       return new CodePack(methodType, temp, code);
     }
 
+    code.add(new IR.Call(global, false, sources));
 
+    return new CodePack(methodType, code);
 
 
   }
