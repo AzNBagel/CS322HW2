@@ -407,9 +407,30 @@ public class IRGen {
   //     (e) Generate and IR.Store instruction
   //
   static List<IR.Inst> gen(Ast.Assign n, ClassInfo cinfo, Env env) throws Exception {
- 
-    //  ... NEED CODE ...
+    List<IR.Inst> code = new ArrayList<>();
+    List<IR.Src> sources = new ArrayList<>();
 
+    CodePack rhsPack = gen(n.rhs, cinfo, env);
+    code.addAll(rhsPack.code)
+
+    if(n.lhs instanceof Ast.Id) {
+      // If LHS is ID and local
+      if(env.containsKey(((Ast.Id)n.lhs).nm)) {
+        IR.Dest lhs = new IR.Id(((Ast.Id)n.lhs).nm);
+        code.add(new IR.Move(lhs, rhsPack.src ));
+      }
+    }
+    // LHS is field, need to gen addr
+    else {
+      CodePack lhsPack = gen(n.lhs, cinfo, env);
+      ClassInfo fieldInfo = getClassInfo(n.lhs, cinfo, env);
+      int offset = fieldInfo.fieldOffset(((Ast.Id)n.lhs).nm);
+      IR.Addr addr = new Ir.Addr(lhsPack.src, offset);
+
+      code.add(new IR.Store(gen(fieldInfo.fieldType(n.nm)), addr, rhsPack.src));
+
+    }
+    return code;
   }
 
   // CallStmt ---
@@ -471,7 +492,7 @@ public class IRGen {
     // Have to set to false here
     code.add(new IR.Call(global, false, sources));
 
-    return new CodePack(methodType, temp, code);
+    return new CodePack(new IR.Type, new IR.Temp, code);
 
 
   }
