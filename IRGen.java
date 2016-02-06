@@ -435,7 +435,8 @@ public class IRGen {
       int offset = fieldInfo.fieldOffset(((Ast.Field)n.lhs).nm);
       IR.Addr addr = new Ir.Addr(lhsPack.src, offset);
 
-      code.add(new IR.Store(ftem, addr, rhsPack.src));
+      // wtttttffffffffffffffffffffff
+      code.add(new IR.Store(, addr, rhsPack.src));
 
     }
     return code;
@@ -749,9 +750,8 @@ public class IRGen {
   //     (b) Call gen on this new node
   //
   static CodePack gen(Ast.Id n, ClassInfo cinfo, Env env) throws Exception {
-    if(env.containsKey(n)) {
-      CodePack idPack = new CodePack(gen(env.get(n.nm)), new IR.Id(n.nm));
-      return idPack;
+    if(env.containsKey(n.nm)) {
+      return new CodePack(gen(env.get(n.nm)), new IR.Id(n.nm));
     }
     else {
       Ast.Field instanceVar = new Ast.Field(new Ast.This(), n.nm);
