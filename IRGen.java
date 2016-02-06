@@ -411,7 +411,7 @@ public class IRGen {
     List<IR.Src> sources = new ArrayList<>();
 
     CodePack rhsPack = gen(n.rhs, cinfo, env);
-    code.addAll(rhsPack.code)
+    code.addAll(rhsPack.code);
 
     if(n.lhs instanceof Ast.Id) {
       // If LHS is ID and local
@@ -423,11 +423,12 @@ public class IRGen {
     // LHS is field, need to gen addr
     else {
       CodePack lhsPack = gen(n.lhs, cinfo, env);
+      Ast.Field ftemp = new Ast.Field(Ast.This, ((Ast.Id) n.lhs).nm);
       ClassInfo fieldInfo = getClassInfo(n.lhs, cinfo, env);
-      int offset = fieldInfo.fieldOffset(((Ast.Id)n.lhs).nm);
+      int offset = fieldInfo.fieldOffset(ftemp.nm);
       IR.Addr addr = new Ir.Addr(lhsPack.src, offset);
 
-      code.add(new IR.Store(gen(fieldInfo.fieldType(n.nm)), addr, rhsPack.src));
+      code.add(new IR.Store(gen(fieldInfo.fieldType(ftemp.nm), addr, rhsPack.src)));
 
     }
     return code;
@@ -561,7 +562,7 @@ public class IRGen {
   //        + "L2:"
   //
   static List<IR.Inst> gen(Ast.While n, ClassInfo cinfo, Env env) throws Exception {
-    List<IR.Inst> code = new ArrayList<IR.Inst>();
+    List<IR.Inst> code = new ArrayList<>();
     CodePack condPack = gen(n.cond, cinfo, env);
     IR.Label L1 = new IR.Label();
     IR.Label L2 = new IR.Label();
@@ -595,8 +596,8 @@ public class IRGen {
   //     to decide between "printInt" and "printBool"
   //
   static List<IR.Inst> gen(Ast.Print n, ClassInfo cinfo, Env env) throws Exception {
-    List<IR.Inst> code = new ArrayList<IR.Inst>();
-    List<IR.Src> sources = new ArrayList<IR.Src>();
+    List<IR.Inst> code = new ArrayList<>();
+    List<IR.Src> sources = new ArrayList<>();
     IR.Global global;
 
     // Need a check to determine which print global to use.
@@ -629,10 +630,20 @@ public class IRGen {
   //  2. Generate an IR.Return instruction
   //
   static List<IR.Inst> gen(Ast.Return n, ClassInfo cinfo, Env env) throws Exception {
- 
-    //  ... NEED CODE ...
-    
+    List<IR.Inst> code = new ArrayList<>();
 
+    // Generate value to be returned.
+    if(n.val != null) {
+      CodePack valPack = gen(n.val, cinfo, env);
+      code.addAll(valPack.code);
+      code.add(new IR.Return(valPack.src));
+    }
+    // Otherwise just dump an empty return
+    // in the case of a void
+    else
+      code.add(new IR.Return());
+
+    return code;
   }
 
   // EXPRESSIONS
@@ -688,7 +699,8 @@ public class IRGen {
     }
 
     code.add(new IR.Call(global, b, sources, temp));
-    IR.Temp temp = new IR.Temp();
+
+    return new CodePack(temp, code);
 
   }
   
