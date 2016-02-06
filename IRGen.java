@@ -323,7 +323,7 @@ public class IRGen {
 
       // code.addAll(gen(v, cinfo, env));
       if (v.init != null) {
-        CodePack initPack = gen(v.init);
+        CodePack initPack = gen(v.init, cinfo, env);
         code.addAll(initPack.code);
         code.add(new IR.Move(new IR.Id(v.nm), initPack.src));
       }
@@ -358,9 +358,16 @@ public class IRGen {
   //
   static List<IR.Inst> gen(Ast.VarDecl n, ClassInfo cinfo, 
                    Env env) throws Exception {
+    List<IR.Inst> code = new ArrayList<IR.Inst>();
+    IR.Id varId = new IR.Id(n.nm);
 
-    //  ... NEED CODE ...
-
+    if(n.init != null) {
+      CodePack varPack = gen (n.init, cinfo, env);
+      // Link the ID to the value.
+      IR.Move assign = new IR.Move(varId, varPack.src);
+      code.add(assign);
+    }
+    return code;
   }
 
   // STATEMENTS
@@ -423,12 +430,12 @@ public class IRGen {
     // LHS is field, need to gen addr
     else {
       CodePack lhsPack = gen(n.lhs, cinfo, env);
-      Ast.Field ftemp = new Ast.Field(Ast.This, ((Ast.Id) n.lhs).nm);
-      ClassInfo fieldInfo = getClassInfo(n.lhs, cinfo, env);
-      int offset = fieldInfo.fieldOffset(ftemp.nm);
+      // Ast.Field ftemp = new Ast.Field(Ast.This, ((Ast.Id) n.lhs).nm);
+      ClassInfo fieldInfo = getClassInfo(((Ast.Field)n.lhs).obj, cinfo, env);
+      int offset = fieldInfo.fieldOffset(((Ast.Field)n.lhs).nm);
       IR.Addr addr = new Ir.Addr(lhsPack.src, offset);
 
-      code.add(new IR.Store(gen(fieldInfo.fieldType(ftemp.nm), addr, rhsPack.src)));
+      code.add(new IR.Store(ftem, addr, rhsPack.src));
 
     }
     return code;
@@ -467,7 +474,7 @@ public class IRGen {
     List<IR.Src> sources = new ArrayList<>();
 
     ClassInfo baseInfo = getClassInfo(obj, cinfo, env);
-    IR.Global global = new IR.Global("_" + cinfo.methodBaseClass(name) + "_" + name);
+    IR.Global global = new IR.Global("_" + baseInfo.methodBaseClass(name) + "_" + name);
     CodePack objPack = gen(obj, cinfo, env);
     sources.add(objPack.src);
     code.addAll(objPack.code);
