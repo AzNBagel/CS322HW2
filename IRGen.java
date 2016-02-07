@@ -623,10 +623,11 @@ public class IRGen {
     else {
       global = new IR.Global("_printInt");
     }
-    CodePack argPack = gen(n.arg, cinfo, env);
-    code.addAll(argPack.code);
-    sources.add(argPack.src);
-
+    if (n.arg != null) {
+      CodePack argPack = gen(n.arg, cinfo, env);
+      code.addAll(argPack.code);
+      sources.add(argPack.src);
+    }
     code.add(new IR.Call(global, false, sources));
 
     return code;
