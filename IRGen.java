@@ -295,17 +295,15 @@ public class IRGen {
     IR.Global methodName;
     // If method name is Main
     if(!n.nm.equals("main")) {
-      // 1
+      // 1 Construct name
       methodName = new IR.Global("_" + cinfo.name + "_" + n.nm);
-      // 2
-
-      // Unsure of what thisObj actually is
+      // 2 Add thisObj into params list
       params.add(thisObj);
     }
     else
       methodName = new IR.Global("main");
 
-    // 3
+    // 3 create env and add all params
     Env env = new Env();
     for(Ast.Param p : n.params) {
       params.add(new IR.Id(p.nm));
@@ -318,20 +316,10 @@ public class IRGen {
         locals.add(new IR.Id(v.nm));
         env.put(v.nm, v.t);
       }
-      // ***************
-      // REVIEW
-
-      // code.addAll(gen(v, cinfo, env));
-      if (v.init != null) {
-        CodePack initPack = gen(v.init, cinfo, env);
-        code.addAll(initPack.code);
-        code.add(new IR.Move(new IR.Id(v.nm), initPack.src));
-      }
-      // *******************
+      code.addAll(gen(v, cinfo, env));
     }
-    // Comments said to do this
+    // Reset temp counter;
     IR.Temp.reset();
-
     //5
     for(Ast.Stmt s : n.stmts) {
       code.addAll(gen(s, cinfo, env));
@@ -341,7 +329,6 @@ public class IRGen {
     if (cinfo.methodType(n.nm) == null) {
       code.add(new IR.Return());
     }
-
 
     return new IR.Func(methodName, params, locals, code);
   } 
@@ -358,7 +345,7 @@ public class IRGen {
   //
   static List<IR.Inst> gen(Ast.VarDecl n, ClassInfo cinfo, 
                    Env env) throws Exception {
-    List<IR.Inst> code = new ArrayList<IR.Inst>();
+    List<IR.Inst> code = new ArrayList<>();
     IR.Id varId = new IR.Id(n.nm);
 
     if(n.init != null) {
@@ -499,24 +486,19 @@ public class IRGen {
       code.addAll(ePack.code);
       sources.add(ePack.src);
     }
-
     //  6. If retFlag is set, need to receive return value
     //     (a) From base ClassInfo, find out the method's return type
     //     (b) Create a new temp
     if(retFlag) {
-      IR.Type methodType methodType = gen(baseInfo.methodType(name));
-      IR.Temp temp temp = new IR.Temp();
+      IR.Type methodType = gen(baseInfo.methodType(name));
+      IR.Temp temp = new IR.Temp();
       //  7. Generate IR.Call instruction (set the indirect flag to false)
       code.add(new IR.Call(global, false, sources, temp));
-
       return new CodePack(methodType, temp, code);
     }
-
     //  7. Generate IR.Call instruction (set the indirect flag to false)
     code.add(new IR.Call(global, false, sources));
-
     Ast.Type tempType = baseInfo.fieldType(((Ast.Field)obj).nm);
-
     return new CodePack(gen(tempType), new IR.Temp(), code);
   }
 
@@ -749,13 +731,14 @@ public class IRGen {
     List<IR.Inst> code = new ArrayList<>();
 
     CodePack fieldPack = gen(n.obj, cinfo, env);
+    code.addAll(fieldPack.code);
+
     ClassInfo objInfo = getClassInfo(n.obj, cinfo, env);
     int offset = objInfo.fieldOffset(n.nm);
     IR.Addr addr = new IR.Addr(fieldPack.src, offset);
 
     IR.Load load = new IR.Load(gen(objInfo.fieldType(n.nm)), new IR.Temp(), addr);
-    
-    code.add(new IR.Load(gen(objInfo.fieldType(n.nm)), new IR.Temp(), addr));
+    code.add(load);
 
     Ast.Type tempType = objInfo.fieldType(n.nm);
 
