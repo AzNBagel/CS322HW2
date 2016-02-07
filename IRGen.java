@@ -483,40 +483,41 @@ public class IRGen {
               ClassInfo cinfo, Env env, boolean retFlag) throws Exception {
     List<IR.Inst> code = new ArrayList<>();
     List<IR.Src> sources = new ArrayList<>();
-
+    //  1. Call getClassInfo() on obj to get the base ClassInfo
     ClassInfo baseInfo = getClassInfo(obj, cinfo, env);
+    //  2. From base ClassInfo, find out the method's base class
+    //  3. Combine base class name and method name to form an IR.Global
     IR.Global global = new IR.Global("_" + baseInfo.methodBaseClass(name) + "_" + name);
+    //  4. Call gen() on obj to get obj's address; add the address as the 0th
+    //     arg to the args list
     CodePack objPack = gen(obj, cinfo, env);
     sources.add(objPack.src);
     code.addAll(objPack.code);
-
+    //  5. Gen and add other arguments
     for(Ast.Exp e : args) {
       CodePack ePack = gen(e, cinfo, env);
       code.addAll(ePack.code);
       sources.add(ePack.src);
     }
 
-    IR.Temp temp;
-    IR.Type methodType;
+    //  6. If retFlag is set, need to receive return value
+    //     (a) From base ClassInfo, find out the method's return type
+    //     (b) Create a new temp
     if(retFlag) {
-      methodType = gen(baseInfo.methodType(name));
-      temp = new IR.Temp();
-
+      IR.Type methodType methodType = gen(baseInfo.methodType(name));
+      IR.Temp temp temp = new IR.Temp();
+      //  7. Generate IR.Call instruction (set the indirect flag to false)
       code.add(new IR.Call(global, false, sources, temp));
 
       return new CodePack(methodType, temp, code);
     }
 
-
-    // Have to set to false here
+    //  7. Generate IR.Call instruction (set the indirect flag to false)
     code.add(new IR.Call(global, false, sources));
 
     Ast.Type tempType = baseInfo.fieldType(((Ast.Field)obj).nm);
 
-
     return new CodePack(gen(tempType), new IR.Temp(), code);
-
-
   }
 
   // If ---
@@ -598,6 +599,8 @@ public class IRGen {
     code.add(L1Dec);
     code.addAll(condPack.code);
     code.add(cJump);
+
+
 
     // Loop body
     for(IR.Inst i : gen(n.s, cinfo, env))
