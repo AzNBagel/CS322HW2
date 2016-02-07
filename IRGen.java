@@ -296,7 +296,7 @@ public class IRGen {
     // If method name is Main
     if(!n.nm.equals("main")) {
       // 1 Construct name
-      methodName = new IR.Global("_" + cinfo.name + "_" + n.nm);
+      methodName = new IR.Global("_" + cinfo.methodBaseClass(n.nm) + "_" + n.nm);
       // 2 Add thisObj into params list
       params.add(thisObj);
     }
@@ -316,10 +316,14 @@ public class IRGen {
         locals.add(new IR.Id(v.nm));
         env.put(v.nm, v.t);
       }
-      code.addAll(gen(v, cinfo, env));
     }
     // Reset temp counter;
     IR.Temp.reset();
+
+    for(Ast.VarDecl v : n.vars) {
+      code.addAll(gen(v, cinfo, env));
+    }
+
     //5
     for(Ast.Stmt s : n.stmts) {
       code.addAll(gen(s, cinfo, env));
@@ -409,13 +413,14 @@ public class IRGen {
 
     if(n.lhs instanceof Ast.Id) {
       // If LHS is ID and local
+      CodePack lhsPack = gen(n.lhs, cinfo, env);
+
       if(env.containsKey(((Ast.Id)n.lhs).nm)) {
         IR.Dest lhs = new IR.Id(((Ast.Id)n.lhs).nm);
-        code.add(new IR.Move(lhs, rhsPack.src ));
+        code.add(new IR.Move(lhs, rhsPack.src));
       }
       else {
-        CodePack lhsPack = gen(n.lhs, cinfo, env);
-        Ast.Field ftemp= new Ast.Field(Ast.This, ((Ast.Id)n.lhs).nm);
+        Ast.Field ftemp = new Ast.Field(Ast.This, ((Ast.Id)n.lhs).nm);
         ClassInfo fieldInfo = getClassInfo(ftemp, cinfo, env);
         int offset = fieldInfo.fieldOffset(ftemp.nm);
         IR.Addr addr = new IR.Addr(lhsPack.src, offset);
