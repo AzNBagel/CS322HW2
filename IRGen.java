@@ -432,7 +432,7 @@ public class IRGen {
         ClassInfo fieldInfo = getClassInfo(ftemp, cinfo, env);
         int offset = fieldInfo.fieldOffset(ftemp.nm);
         IR.Addr addr = new IR.Addr(lhsPack.src, offset);
-        Ast.Type temp = fieldInfo.fieldType(((Ast.Field)n.lhs).nm);
+        Ast.Type temp = fieldInfo.fieldType(ftemp.nm);
 
         code.add(new IR.Store(gen(temp), addr, rhsPack.src));
       }
@@ -713,19 +713,20 @@ public class IRGen {
     sources.add(objSize);
 
     IR.Temp temp = new IR.Temp();
+    IR.IntLit zeroLit = new IR.IntLit(0);
+
+    Ast.Type tempType = newInfo.fieldType(n.nm);
 
     IR.Global global;
     if(size != 0) {
       global = new IR.Global("_malloc");
       code.add(new IR.Call(global, b, sources, temp));
+
+      return new CodePack(gen(tempType), temp, code);
     }
     else { //generate an intlit(0)
-
+      return new CodePack(gen(tempType), zeroLit, code);
     }
-
-
-
-    return new CodePack(temp, code);
 
   }
   
@@ -753,7 +754,9 @@ public class IRGen {
     
     code.add(new IR.Load(gen(objInfo.fieldType(n.nm)), new IR.Temp(), addr));
 
-    return new CodePack(load, code);
+    Ast.Type tempType = newInfo.fieldType(n.nm);
+
+    return new CodePack(gen(tempType), temp, code);
   }
   
   // Id ---
