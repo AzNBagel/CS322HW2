@@ -426,6 +426,16 @@ public class IRGen {
         IR.Dest lhs = new IR.Id(((Ast.Id)n.lhs).nm);
         code.add(new IR.Move(lhs, rhsPack.src ));
       }
+      else {
+        CodePack lhsPack = gen(n.lhs, cinfo, env);
+        Ast.Field ftemp= new Ast.Field(Ast.This, ((Ast.Id)n.lhs).nm);
+        ClassInfo fieldInfo = getClassInfo(ftemp, cinfo, env);
+        int offset = fieldInfo.fieldOffset(ftemp.nm);
+        IR.Addr addr = new IR.Addr(lhsPack.src, offset);
+        Ast.Type temp = fieldInfo.fieldType(((Ast.Field)n.lhs).nm);
+
+        code.add(new IR.Store(gen(temp), addr, rhsPack.src));
+      }
     }
     // LHS is field, need to gen addr
     else {
@@ -433,10 +443,10 @@ public class IRGen {
       // Ast.Field ftemp = new Ast.Field(Ast.This, ((Ast.Id) n.lhs).nm);
       ClassInfo fieldInfo = getClassInfo(((Ast.Field)n.lhs).obj, cinfo, env);
       int offset = fieldInfo.fieldOffset(((Ast.Field)n.lhs).nm);
-      IR.Addr addr = new Ir.Addr(lhsPack.src, offset);
+      IR.Addr addr = new IR.Addr(lhsPack.src, offset);
+      Ast.Type temp = fieldInfo.fieldType(((Ast.Field)n.lhs).nm);
 
-      // wtttttffffffffffffffffffffff
-      code.add(new IR.Store(, addr, rhsPack.src));
+      code.add(new IR.Store(gen(temp), addr, rhsPack.src));
 
     }
     return code;
@@ -480,7 +490,11 @@ public class IRGen {
     sources.add(objPack.src);
     code.addAll(objPack.code);
 
-
+    for(Ast.Exp e : args) {
+      CodePack ePack = gen(e, cinfo, env);
+      code.addAll(ePack.code);
+      sources.add(ePack.src);
+    }
 
     IR.Temp temp;
     IR.Type methodType;
@@ -493,15 +507,14 @@ public class IRGen {
       return new CodePack(methodType, temp, code);
     }
 
-    for(Ast.Exp e : args) {
-      CodePack ePack = gen(e, cinfo, env);
-      code.addAll(ePack.code);
-      sources.add(ePack.src);
-    }
+
     // Have to set to false here
     code.add(new IR.Call(global, false, sources));
 
-    return new CodePack(new IR.Type, new IR.Temp, code);
+    Ast.Type tempType = baseInfo.fieldType(((Ast.Field)obj).nm);
+
+
+    return new CodePack(gen(tempType), new IR.Temp(), code);
 
 
   }
@@ -699,14 +712,18 @@ public class IRGen {
 
     sources.add(objSize);
 
-    IR.Temp temp = new IR.Temp;
+    IR.Temp temp = new IR.Temp();
 
     IR.Global global;
     if(size != 0) {
       global = new IR.Global("_malloc");
+      code.add(new IR.Call(global, b, sources, temp));
+    }
+    else { //generate an intlit(0)
+
     }
 
-    code.add(new IR.Call(global, b, sources, temp));
+
 
     return new CodePack(temp, code);
 
