@@ -312,10 +312,10 @@ public class IRGen {
     // Add locals only once
     // 4
     for(Ast.VarDecl v : n.vars) {
-      if(!locals.contains(v)) {
+      //if(!locals.contains(v)) {
         locals.add(new IR.Id(v.nm));
         env.put(v.nm, v.t);
-      }
+      //}
     }
     // Reset temp counter;
     IR.Temp.reset();
