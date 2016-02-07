@@ -750,11 +750,13 @@ public class IRGen {
     int offset = objInfo.fieldOffset(n.nm);
     IR.Addr addr = new IR.Addr(fieldPack.src, offset);
 
-    IR.Load load = new IR.Load(gen(objInfo.fieldType(n.nm)), new IR.Temp(), addr)
+    IR.Load load = new IR.Load(gen(objInfo.fieldType(n.nm)), new IR.Temp(), addr);
     
     code.add(new IR.Load(gen(objInfo.fieldType(n.nm)), new IR.Temp(), addr));
 
-    Ast.Type tempType = newInfo.fieldType(n.nm);
+    Ast.Type tempType = objInfo.fieldType(n.nm);
+
+    IR.Temp temp = new IR.Temp();
 
     return new CodePack(gen(tempType), temp, code);
   }
