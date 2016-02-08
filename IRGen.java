@@ -301,7 +301,7 @@ public class IRGen {
       params.add(thisObj);
     }
     else
-      methodName = new IR.Global("main");
+      methodName = new IR.Global("_main");
 
     // 3 create env and add all params
     Env env = new Env();
