@@ -483,7 +483,8 @@ public class IRGen {
     //  4. Call gen() on obj to get obj's address; add the address as the 0th
     //     arg to the args list
     CodePack objPack = gen(obj, cinfo, env);
-    sources.add(objPack.src);
+    // sources.add(objPack.src);
+    sources.add(new IR.Addr(objPack.src).base);
     code.addAll(objPack.code);
     //  5. Gen and add other arguments
     for(Ast.Exp e : args) {
@@ -503,8 +504,7 @@ public class IRGen {
     }
     //  7. Generate IR.Call instruction (set the indirect flag to false)
     code.add(new IR.Call(global, false, sources));
-    Ast.Type tempType = baseInfo.fieldType(((Ast.Field)obj).nm);
-    return new CodePack(gen(tempType), new IR.Temp(), code);
+    return new CodePack(null, objPack.src, code);
   }
 
   // If ---
