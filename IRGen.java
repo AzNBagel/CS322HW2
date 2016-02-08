@@ -416,7 +416,7 @@ public class IRGen {
       CodePack lhsPack = gen(n.lhs, cinfo, env);
 
       if(env.containsKey(((Ast.Id)n.lhs).nm)) {
-        IR.Dest lhs = new IR.Id(((Ast.Id)n.lhs).nm);
+        IR.Dest lhs = new IR.Id(((Ast.Id)lhsPack.src);
         code.add(new IR.Move(lhs, rhsPack.src));
       }
       else {
@@ -425,9 +425,9 @@ public class IRGen {
         int offset = fieldInfo.fieldOffset(ftemp.nm);
         CodePack fieldPack = gen(ftemp, cinfo, env);
         IR.Addr addr = new IR.Addr(fieldPack.src, offset);
-        Ast.Type temp = fieldInfo.fieldType(ftemp.nm);
+        //Ast.Type temp = fieldInfo.fieldType(ftemp.nm);
 
-        code.add(new IR.Store(gen(temp), addr, rhsPack.src));
+        code.add(new IR.Store(fieldPack.type, addr, rhsPack.src));
       }
     }
     // LHS is field, need to gen addr
