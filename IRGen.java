@@ -312,10 +312,10 @@ public class IRGen {
     // Add locals only once
     // 4
     for(Ast.VarDecl v : n.vars) {
-      //if(!locals.contains(v)) {
+      if(!locals.contains(v)) {
         locals.add(new IR.Id(v.nm));
         env.put(v.nm, v.t);
-      //}
+      }
     }
     // Reset temp counter;
     IR.Temp.reset();
@@ -696,8 +696,8 @@ public class IRGen {
     List<IR.Inst> code = new ArrayList<>();
     List<IR.Src> sources = new ArrayList<>();
     boolean b = false;
-    ClassInfo newInfo = classEnv.get(n.nm);
 
+    ClassInfo newInfo = classEnv.get(n.nm);
     int size = newInfo.objSize;
     IR.IntLit objSize = new IR.IntLit(size);
 
@@ -706,17 +706,17 @@ public class IRGen {
     IR.Temp temp = new IR.Temp();
     IR.IntLit zeroLit = new IR.IntLit(0);
 
-    Ast.Type tempType = newInfo.fieldType(n.nm);
+    // Ast.Type tempType = newInfo.fieldType(n.nm);
 
     IR.Global global;
     if(size != 0) {
       global = new IR.Global("_malloc");
       code.add(new IR.Call(global, b, sources, temp));
 
-      return new CodePack(gen(tempType), temp, code);
+      return new CodePack(IR.Type.PTR, temp, code);
     }
     else { //generate an intlit(0)
-      return new CodePack(gen(tempType), zeroLit, code);
+      return new CodePack(IR.Type.PTR, zeroLit, code);
     }
 
   }
