@@ -301,7 +301,7 @@ public class IRGen {
       params.add(thisObj);
     }
     else
-      methodName = new IR.Global("_main");
+      methodName = new IR.Global("_" + n.nm);
 
     // 3 create env and add all params
     Env env = new Env();
@@ -610,24 +610,27 @@ public class IRGen {
     List<IR.Inst> code = new ArrayList<>();
     List<IR.Src> sources = new ArrayList<>();
     IR.Global global;
+    CodePack argPack = null;
 
+    if (n.arg != null) {
+      argPack = gen(n.arg, cinfo, env); 
+      code.addAll(argPack.code);
+      sources.add(argPack.src);
+    }
     // Need a check to determine which print global to use.
     // If the arg is a strlit, or unll we use _printStr
     if(n.arg instanceof Ast.StrLit || n.arg == null) {
       global = new IR.Global("_printStr");
     }
     // Else we use printInt (Booleans included as 0 or 1)
-    else if (n.arg instanceof Ast.BoolLit) {
-      global = new IR.Global("_PrintBool");
+    else if (n.arg instanceof Ast.BoolLit || argPack.type == IR.Type.BOOL) {
+      global = new IR.Global("_printBool");
     }
     else {
       global = new IR.Global("_printInt");
     }
-    if (n.arg != null) {
-      CodePack argPack = gen(n.arg, cinfo, env);
-      code.addAll(argPack.code);
-      sources.add(argPack.src);
-    }
+    
+    
     code.add(new IR.Call(global, false, sources));
 
     return code;
