@@ -421,7 +421,7 @@ public class IRGen {
       }
       else {
         Ast.Field ftemp = new Ast.Field(Ast.This, ((Ast.Id)n.lhs).nm);
-        ClassInfo fieldInfo = getClassInfo(ftemp, cinfo, env);
+        ClassInfo fieldInfo = getClassInfo(ftemp.obj, cinfo, env);
         int offset = fieldInfo.fieldOffset(ftemp.nm);
         IR.Addr addr = new IR.Addr(lhsPack.src, offset);
         Ast.Type temp = fieldInfo.fieldType(ftemp.nm);
