@@ -700,17 +700,12 @@ public class IRGen {
     List<IR.Inst> code = new ArrayList<>();
     List<IR.Src> sources = new ArrayList<>();
     boolean b = false;
+    IR.Temp temp = new IR.Temp();
 
     ClassInfo newInfo = classEnv.get(n.nm);
     int size = newInfo.objSize;
     IR.IntLit objSize = new IR.IntLit(size);
-
     sources.add(objSize);
-
-    IR.Temp temp = new IR.Temp();
-    IR.IntLit zeroLit = new IR.IntLit(0);
-
-    // Ast.Type tempType = newInfo.fieldType(n.nm);
 
     IR.Global global;
     if(size != 0) {
@@ -720,7 +715,8 @@ public class IRGen {
       return new CodePack(IR.Type.PTR, temp, code);
     }
     else { //generate an intlit(0)
-      return new CodePack(IR.Type.PTR, zeroLit, code);
+
+      return new CodePack(IR.Type.PTR, new IR.IntLit(0), code);
     }
 
   }
