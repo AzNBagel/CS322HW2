@@ -353,7 +353,7 @@ public class IRGen {
     IR.Id varId = new IR.Id(n.nm);
 
     if(n.init != null) {
-      CodePack varPack = gen (n.init, cinfo, env);
+      CodePack varPack = gen(n.init, cinfo, env);
       // Link the ID to the value.
       IR.Move assign = new IR.Move(varId, varPack.src);
       code.add(assign);
@@ -416,8 +416,8 @@ public class IRGen {
       CodePack lhsPack = gen(n.lhs, cinfo, env);
 
       if(env.containsKey(((Ast.Id)n.lhs).nm)) {
-        IR.Dest lhs = new IR.Id(((Ast.Id)lhsPack.src);
-        code.add(new IR.Move(lhs, rhsPack.src));
+        //IR.Dest lhs = new IR.Id(((IR.Id)lhsPack.src));
+        code.add(new IR.Move((IR.Id)lhsPack.src, rhsPack.src));
       }
       else {
         Ast.Field ftemp = new Ast.Field(Ast.This, ((Ast.Id)n.lhs).nm);
@@ -485,7 +485,7 @@ public class IRGen {
     //     arg to the args list
     CodePack objPack = gen(obj, cinfo, env);
     // sources.add(objPack.src);
-    sources.add(new IR.Addr(objPack.src).base);
+    sources.add(objPack.src);
     code.addAll(objPack.code);
     //  5. Gen and add other arguments
     for(Ast.Exp e : args) {
@@ -752,9 +752,9 @@ public class IRGen {
 
     Ast.Type tempType = objInfo.fieldType(n.nm);
 
-    IR.Temp temp = new IR.Temp();
+    //IR.Temp temp = new IR.Temp();
 
-    return new CodePack(gen(tempType), temp, code);
+    return new CodePack(gen(tempType), fieldPack.src, code);
   }
   
   // Id ---
