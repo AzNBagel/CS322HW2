@@ -777,8 +777,6 @@ public class IRGen {
 
     Ast.Type tempType = objInfo.fieldType(n.nm);
 
-
-
     return new CodePack(gen(tempType), temp, code);
   }
   
