@@ -420,7 +420,7 @@ public class IRGen {
 
     if(n.lhs instanceof Ast.Id) {
       // If LHS is ID and local
-      CodePack lhsPack = gen(n.lhs, cinfo, env);
+      //CodePack lhsPack = gen(n.lhs, cinfo, env);
 
       if(env.containsKey(((Ast.Id)n.lhs).nm)) {
         IR.Dest lhs = new IR.Id(((Ast.Id)n.lhs).nm);
@@ -434,20 +434,21 @@ public class IRGen {
         IR.Addr addr = new IR.Addr(fieldPack.src, offset);
         //Ast.Type temp = fieldInfo.fieldType(ftemp.nm);
 
+        code.addAll(fieldPack.code);
         code.add(new IR.Store(fieldPack.type, addr, rhsPack.src));
       }
     }
     // LHS is field, need to gen addr
     else {
-      CodePack lhsPack = gen(n.lhs, cinfo, env);
+      CodePack lhsPack = gen(((Ast.Field)n.lhs).obj, cinfo, env);
       // Ast.Field ftemp = new Ast.Field(Ast.This, ((Ast.Id) n.lhs).nm);
       ClassInfo fieldInfo = getClassInfo(((Ast.Field)n.lhs).obj, cinfo, env);
       int offset = fieldInfo.fieldOffset(((Ast.Field)n.lhs).nm);
       IR.Addr addr = new IR.Addr(lhsPack.src, offset);
       Ast.Type temp = fieldInfo.fieldType(((Ast.Field)n.lhs).nm);
 
+      code.addAll(lhsPack.code);
       code.add(new IR.Store(gen(temp), addr, rhsPack.src));
-
     }
     return code;
   }
