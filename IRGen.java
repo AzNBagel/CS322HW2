@@ -624,7 +624,27 @@ public class IRGen {
 
 
     // Need a check to determine which print global to use.
-    // If the arg is a strlit, or unll we use _printStr
+    // If the arg is a strlit, or null we use _printStr
+    if(n.arg == null) {
+      global = new IR.Global("_printStr");
+    }
+    else if (n.arg instanceof Ast.StrLit) {
+      sources.add(new IR.StrLit(((Ast.StrLit)n.arg).s));
+      global = new IR.Global("_printStr");
+    }
+    else {
+      argPack = gen(n.arg, cinfo, env);
+      code.addAll(argPack.code);
+      sources.add(argPack.src);
+      if(n.arg instanceof Ast.BoolLit || argPack.type == IR.Type.BOOL) {
+        global = new IR.Global("_printBool");
+
+      }
+      else {
+        global = new IR.Global("_printInt");
+      }
+    }
+  /*
     if(n.arg instanceof Ast.StrLit || n.arg == null) {
       global = new IR.Global("_printStr");
     }
@@ -636,13 +656,10 @@ public class IRGen {
       sources.add(argPack.src);
     }
     else {
-      global = new IR.Global("_printInt");
-      argPack = gen(n.arg, cinfo, env);
-      code.addAll(argPack.code);
-      sources.add(argPack.src);
+
     }
     
-    
+    */
     code.add(new IR.Call(global, false, sources));
 
     return code;
