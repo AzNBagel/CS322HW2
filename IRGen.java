@@ -423,8 +423,8 @@ public class IRGen {
       CodePack lhsPack = gen(n.lhs, cinfo, env);
 
       if(env.containsKey(((Ast.Id)n.lhs).nm)) {
-        //IR.Dest lhs = new IR.Id(((IR.Id)lhsPack.src));
-        code.add(new IR.Move((IR.Id)lhsPack.src, rhsPack.src));
+        IR.Dest lhs = new IR.Id(((Ast.Id)n.lhs).nm);
+        code.add(new IR.Move(lhs, rhsPack.src));
       }
       else {
         Ast.Field ftemp = new Ast.Field(Ast.This, ((Ast.Id)n.lhs).nm);
@@ -494,7 +494,7 @@ public class IRGen {
     sources.add(objPack.src);
 
 
-    //code.addAll(objPack.code);
+    code.addAll(objPack.code);
     //  5. Gen and add other arguments
     for(Ast.Exp e : args) {
       CodePack ePack = gen(e, cinfo, env);
