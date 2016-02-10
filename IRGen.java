@@ -504,7 +504,7 @@ public class IRGen {
     //     (a) From base ClassInfo, find out the method's return type
     //     (b) Create a new temp
     if(retFlag) {
-      IR.Type methodType = gen(baseInfo.methodType(name));
+      IR.Type methodType = gen(classInfo.methodType(name));
       IR.Temp temp = new IR.Temp();
       //  7. Generate IR.Call instruction (set the indirect flag to false)
       code.add(new IR.Call(global, false, sources, temp));
