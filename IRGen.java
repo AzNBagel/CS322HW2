@@ -310,8 +310,6 @@ public class IRGen {
       env.put(p.nm, p.t);
     }
 
-    //Lets try here
-    IR.Temp.reset();
 
     // Add locals only once
     // 4
@@ -322,9 +320,8 @@ public class IRGen {
       }
     }
 
-//Where the fuck does this reset go?
     // Reset temp counter;
-    //IR.Temp.reset();
+    IR.Temp.reset();
 
     for(Ast.VarDecl v : n.vars) {
       code.addAll(gen(v, cinfo, env));
@@ -486,20 +483,18 @@ public class IRGen {
               ClassInfo cinfo, Env env, boolean retFlag) throws Exception {
     List<IR.Inst> code = new ArrayList<>();
     List<IR.Src> sources = new ArrayList<>();
-    //  1. Call getClassInfo() on obj to get the base ClassInfo
+    //  1.
     ClassInfo classInfo = getClassInfo(obj, cinfo, env);
-    //  2. From base ClassInfo, find out the method's base class
+    //  2.
     ClassInfo bInfo = classInfo.methodBaseClass(name);
-    //  3. Combine base class name and method name to form an IR.Global
+    //  3.
     IR.Global global = new IR.Global("_" + bInfo.name + "_" + name);
-    //  4. Call gen() on obj to get obj's address; add the address as the 0th
-    //     arg to the args list
+    //  4.
     CodePack objPack = gen(obj, cinfo, env);
-    // sources.add(objPack.src);
     sources.add(objPack.src);
 
 
-    code.addAll(objPack.code);
+    //code.addAll(objPack.code);
     //  5. Gen and add other arguments
     for(Ast.Exp e : args) {
       CodePack ePack = gen(e, cinfo, env);
