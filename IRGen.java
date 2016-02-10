@@ -317,6 +317,8 @@ public class IRGen {
         env.put(v.nm, v.t);
       }
     }
+
+//Where the fuck does this reset go?
     // Reset temp counter;
     IR.Temp.reset();
 
@@ -356,6 +358,11 @@ public class IRGen {
       CodePack varPack = gen(n.init, cinfo, env);
       // Link the ID to the value.
       IR.Move assign = new IR.Move(varId, varPack.src);
+
+      // Add All here?
+      code.addAll(varPack.code);
+
+
       code.add(assign);
     }
     return code;
@@ -406,7 +413,6 @@ public class IRGen {
   //
   static List<IR.Inst> gen(Ast.Assign n, ClassInfo cinfo, Env env) throws Exception {
     List<IR.Inst> code = new ArrayList<>();
-    List<IR.Src> sources = new ArrayList<>();
 
     CodePack rhsPack = gen(n.rhs, cinfo, env);
     code.addAll(rhsPack.code);
@@ -423,7 +429,7 @@ public class IRGen {
         Ast.Field ftemp = new Ast.Field(Ast.This, ((Ast.Id)n.lhs).nm);
         ClassInfo fieldInfo = getClassInfo(ftemp.obj, cinfo, env);
         int offset = fieldInfo.fieldOffset(ftemp.nm);
-        CodePack fieldPack = gen(ftemp, cinfo, env);
+        CodePack fieldPack = gen(ftemp.obj, cinfo, env);
         IR.Addr addr = new IR.Addr(fieldPack.src, offset);
         //Ast.Type temp = fieldInfo.fieldType(ftemp.nm);
 
