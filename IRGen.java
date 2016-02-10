@@ -763,6 +763,7 @@ public class IRGen {
   //
   static CodePack gen(Ast.Field n, ClassInfo cinfo, Env env) throws Exception {
     List<IR.Inst> code = new ArrayList<>();
+    IR.Temp temp = new IR.Temp();
 
     CodePack fieldPack = gen(n.obj, cinfo, env);
     code.addAll(fieldPack.code);
@@ -771,14 +772,14 @@ public class IRGen {
     int offset = objInfo.fieldOffset(n.nm);
     IR.Addr addr = new IR.Addr(fieldPack.src, offset);
 
-    IR.Load load = new IR.Load(gen(objInfo.fieldType(n.nm)), new IR.Temp(), addr);
+    IR.Load load = new IR.Load(gen(objInfo.fieldType(n.nm)), temp, addr);
     code.add(load);
 
     Ast.Type tempType = objInfo.fieldType(n.nm);
 
-    //IR.Temp temp = new IR.Temp();
 
-    return new CodePack(gen(tempType), fieldPack.src, code);
+
+    return new CodePack(gen(tempType), temp, code);
   }
   
   // Id ---
