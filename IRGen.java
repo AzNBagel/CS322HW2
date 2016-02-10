@@ -514,7 +514,7 @@ public class IRGen {
     }
     //  7. Generate IR.Call instruction (set the indirect flag to false)
     code.add(new IR.Call(global, false, sources, null));
-    return new CodePack(null, null, code);
+    return new CodePack(null, objPack.src, code);
   }
 
   // If ---
@@ -622,11 +622,7 @@ public class IRGen {
     IR.Global global;
     CodePack argPack = null;
 
-    if (n.arg != null) {
-      argPack = gen(n.arg, cinfo, env); 
-      code.addAll(argPack.code);
-      sources.add(argPack.src);
-    }
+
     // Need a check to determine which print global to use.
     // If the arg is a strlit, or unll we use _printStr
     if(n.arg instanceof Ast.StrLit || n.arg == null) {
@@ -635,9 +631,15 @@ public class IRGen {
     // Else we use printInt (Booleans included as 0 or 1)
     else if (n.arg instanceof Ast.BoolLit || argPack.type == IR.Type.BOOL) {
       global = new IR.Global("_printBool");
+      argPack = gen(n.arg, cinfo, env);
+      code.addAll(argPack.code);
+      sources.add(argPack.src);
     }
     else {
       global = new IR.Global("_printInt");
+      argPack = gen(n.arg, cinfo, env);
+      code.addAll(argPack.code);
+      sources.add(argPack.src);
     }
     
     
