@@ -483,10 +483,11 @@ public class IRGen {
     List<IR.Inst> code = new ArrayList<>();
     List<IR.Src> sources = new ArrayList<>();
     //  1. Call getClassInfo() on obj to get the base ClassInfo
-    ClassInfo baseInfo = getClassInfo(obj, cinfo, env);
+    ClassInfo classInfo = getClassInfo(obj, cinfo, env);
     //  2. From base ClassInfo, find out the method's base class
+    ClassInfo bInfo = classInfo.methodBaseClass(name);
     //  3. Combine base class name and method name to form an IR.Global
-    IR.Global global = new IR.Global("_" + baseInfo.methodBaseClass(name) + "_" + name);
+    IR.Global global = new IR.Global("_" + bInfo.name + "_" + name);
     //  4. Call gen() on obj to get obj's address; add the address as the 0th
     //     arg to the args list
     CodePack objPack = gen(obj, cinfo, env);
@@ -510,7 +511,7 @@ public class IRGen {
       return new CodePack(methodType, temp, code);
     }
     //  7. Generate IR.Call instruction (set the indirect flag to false)
-    code.add(new IR.Call(global, false, sources));
+    code.add(new IR.Call(global, false, sources, null));
     return new CodePack(null, objPack.src, code);
   }
 
