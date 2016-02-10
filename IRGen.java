@@ -309,6 +309,10 @@ public class IRGen {
       params.add(new IR.Id(p.nm));
       env.put(p.nm, p.t);
     }
+
+    //Lets try here
+    IR.Temp.reset();
+
     // Add locals only once
     // 4
     for(Ast.VarDecl v : n.vars) {
@@ -320,7 +324,7 @@ public class IRGen {
 
 //Where the fuck does this reset go?
     // Reset temp counter;
-    IR.Temp.reset();
+    //IR.Temp.reset();
 
     for(Ast.VarDecl v : n.vars) {
       code.addAll(gen(v, cinfo, env));
