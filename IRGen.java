@@ -431,10 +431,10 @@ public class IRGen {
         int offset = fieldInfo.fieldOffset(ftemp.nm);
         CodePack fieldPack = gen(ftemp.obj, cinfo, env);
         IR.Addr addr = new IR.Addr(fieldPack.src, offset);
-        //Ast.Type temp = fieldInfo.fieldType(ftemp.nm);
+        Ast.Type temp = fieldInfo.fieldType(ftemp.nm);
 
         code.addAll(fieldPack.code);
-        code.add(new IR.Store(fieldPack.type, addr, rhsPack.src));
+        code.add(new IR.Store(gen(temp), addr, rhsPack.src));
       }
     }
     // LHS is field, need to gen addr
