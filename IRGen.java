@@ -493,7 +493,6 @@ public class IRGen {
     CodePack objPack = gen(obj, cinfo, env);
     sources.add(objPack.src);
 
-
     code.addAll(objPack.code);
     //  5. Gen and add other arguments
     for(Ast.Exp e : args) {
