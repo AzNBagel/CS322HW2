@@ -363,7 +363,6 @@ public class IRGen {
       // Add All here?
       code.addAll(varPack.code);
 
-
       code.add(assign);
     }
     return code;
