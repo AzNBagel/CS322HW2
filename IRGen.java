@@ -643,22 +643,6 @@ public class IRGen {
         global = new IR.Global("_printInt");
       }
     }
-  /*
-    if(n.arg instanceof Ast.StrLit || n.arg == null) {
-      global = new IR.Global("_printStr");
-    }
-    // Else we use printInt (Booleans included as 0 or 1)
-    else if (n.arg instanceof Ast.BoolLit || argPack.type == IR.Type.BOOL) {
-      global = new IR.Global("_printBool");
-      argPack = gen(n.arg, cinfo, env);
-      code.addAll(argPack.code);
-      sources.add(argPack.src);
-    }
-    else {
-
-    }
-    
-    */
     code.add(new IR.Call(global, false, sources));
 
     return code;
