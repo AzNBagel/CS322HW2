@@ -4,6 +4,11 @@
 // For CS322 W'16 (J. Li).
 //
 
+
+// Andrew McCann
+// CS322 HW2
+
+
 // IR code generator for miniJava's AST. (Simplified version)
 //
 // Assumptions:
