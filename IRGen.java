@@ -296,7 +296,7 @@ public class IRGen {
     // If method name is Main
     if(!n.nm.equals("main")) {
       // 1 Construct name
-      methodName = new IR.Global("_" + cinfo.methodBaseClass(n.nm) + "_" + n.nm);
+      methodName = new IR.Global("_" + cinfo.methodBaseClass(n.nm).name + "_" + n.nm);
       // 2 Add thisObj into params list
       params.add(thisObj);
     }
